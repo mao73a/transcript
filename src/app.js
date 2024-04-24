@@ -35,15 +35,18 @@ function processFile(filePath) {
 }
 
 
-async function transcribeAudio(filePath) {
+async function transcribeAudio(filePath, res) {
+   res = {fulltext :''};
    try {
       // Transcribe the file using OpenAI Whisper-1
       const transcription = await openai.audio.transcriptions.create({
          file: fs.createReadStream(filePath),
          model: "whisper-1",
+         language: "pl"
       });
       outputFilePath = filePath + '.txt';
       fs.writeFileSync(outputFilePath, transcription.text);
+      res = {fulltext : transcription.text};
       console.log('File transcription saved to ' + outputFilePath);
    } catch (error) {
       console.error('Error transcribing file:', error);
@@ -55,21 +58,25 @@ app.post('/transcript/upload', upload.single('file'), async (req, res) => {
    try {
       // Assuming the uploaded file is saved in 'uploads/' directory
       const filePath = path.join(__dirname, 'uploads', req.file.filename);
-      res.json({ message: 'Transcription in progress...' });
-
-      const command = 'ffmpeg -i '+filePath+' -vn -map_metadata -1 -ac 1 -c:a libopus -b:a 12k -application voip '+filePath+'.ogg';
+      const command = 'ffmpeg -i '+filePath+' -vn -map_metadata -1 -ac 1 -c:a libopus -b:a 24k -application voip '+filePath+'.ogg';
 
       // Execute the command
-      exec(command, (error, stdout, stderr) => {
+      exec(command, async (error, stdout, stderr) => {
          if (error) {
              console.error(`exec error: ${error}`);
              return;
          }
          console.log(`stdout: ${stdout}`);
          console.error(`stderr: ${stderr}`);
-         transcribeAudio(filePath+'.ogg');
+         transResponse={};
+         await transcribeAudio(filePath+'.ogg', transResponse);
+
+         res.json({ message: 'Processing complete.',
+                   fulltext: transResponse.fulltext,
+                  summary: 'To jest testowy tekst podsumowania'
+                  });         
        });
-     
+
 
    } catch (error) {
       console.error('Error transcribing file:', error);
