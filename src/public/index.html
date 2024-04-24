@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="progress progress-striped active" style="display: none;">
+            <div class="progress-bar progress-bar-success" style="width:0%">
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <div id="drop-zone" class="border p-5" style="border-style: dashed; border-radius: 10px;">
+                Drop M4A or MP3 file here
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <div id="memo" class="alert alert-info" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="upload.js"></script>
+</body>
+</html>

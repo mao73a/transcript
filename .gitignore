@@ -1,3 +1,5 @@
+uploads/
+examples/
 # Logs
 logs
 *.log

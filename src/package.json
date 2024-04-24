@@ -1,0 +1,19 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "express": "^4.17.1",
+    "multer": "^1.4.2",
+    "openai": "^4.38.3"
+  },
+  "license": "ISC"
+}
