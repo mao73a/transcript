@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBarContainer = document.querySelector('.progress');
   const progressBar = document.querySelector('.progress-bar');
 
+
   dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
       dropZone.classList.add('dragover');
@@ -30,23 +31,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Show animation while uploading
       dropZone.textContent = 'Uploading...';
-      progressBarContainer.style.display = 'block';
-      progressBar.style.width = '0%';
-
-
-      try {
-          const response = await fetch('/transcript/upload', {
+        {
+          fetch('/transcript/upload', {
               method: 'POST',
               body: formData
+          })
+          .then((response) => {
+            return  response.json();
+          })
+          .then((data) => {
+            dropZone.textContent = data.message;
+
+            const formData = new FormData();
+            formData.append('filename', data.filename);
+            dropZone.textContent = 'Saving speech to text...';
+            return fetch('/transcript/transcribe', {
+                method: 'POST',
+                body: formData
+              });      
+          })
+          .then((response) => {
+            return  response.json();
+          })
+          .then((data) => {
+            dropZone.textContent = 'Reading the shit...';
+          })          
+          .catch(function(error) {
+            console.log('Error 2');
+            dropZone.textContent = error;
+            console.log(error);
           });
+   
+   
+          return;
           let data;
+          console.log(response);           
           if (response.ok) {
+                 
               data = await response.json();
+
               dropZone.textContent = data.message;    
-              memo1.style.display = 'block';
-              memo2.style.display = 'block';      
-              memo1.textContent = data.fulltext;
-              memo2.textContent = data.summary;             
+              formData.filename = data.filename;            
+              const response = await fetch('/transcript/transcribe', {
+                method: 'POST',
+                body: formData
+              });  
+   
+              if (response.ok) {
+
+                data = await response.json();
+                dropZone.textContent = data.message;    
+                formData.filename = data.filename;    
+
+                memo1.style.display = 'block';
+                memo2.style.display = 'block';      
+                memo1.textContent = data.text;
+                memo2.textContent = 'todo';   
+              } else {
+                const text = await response.text();
+                dropZone.textContent = `Error: ${text}`;               
+              }    
           } else {
               const text = await response.text();
               dropZone.textContent = `Error: ${text}`;
@@ -54,12 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           memo1.style.display = 'block';
-      } catch (error) {
-          console.error('Upload failed:', error);
-          dropZone.textContent = 'Upload failed. See console for details';
-          //memo.style.display = 'block';
       }
 
      // dropZone.textContent = 'Drop M4A or MP3 file here';
   });
 });
+
