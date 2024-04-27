@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Upload</title>
+    <title>Podsumowania</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- jQuery and Bootstrap JS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        var config = {
+            applicationName: 'transcript'
+        };
+        function getQueryParam(paramName) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(paramName);
+        }        
+        const taskid = getQueryParam('taskid');
+    </script>
 </head>
 <body>
     <div class="container mt-5">
@@ -21,18 +32,59 @@
                 Drop M4A or MP3 file here
             </div>
         </div>
-        <div class="text-center mt-3">
+        <div class="text-left mt-3">
             <div class="row">
                 <div class="col-md-6">
-                    <div id="memo1" class="alert alert-info" style="display: none;"></div>
+                    <div id="memo1" class="alert alert-info" style="display: none; position: relative;">
+                        <button id="copyButton1" title="Kopiuj tekst" style="position: absolute; top: 0; right: 0; border: none; background: none;">📋</button>
+                        <span id="memo1Text"></span>
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <div id="memo2" class="alert alert-info" style="display: none;"></div>
+                    <div id="memo2" class="alert alert-info" style="display: none; position: relative;">
+                        <div class="memo2-buttons" style="position: absolute; top: 0; right: 0; display: flex;">
+                            <button id="regenerate" title="Generuj odpowiedź ponownie" style="border: none; background: none;">⟲</button>                            
+                            <button id="copyButton2" title="Kopiuj tekst" style="border: none; background: none;">📋</button>
+                        </div>
+                        <span id="memo2Text"></span>
+                    </div>
+                    <div style="display: none;" id="_taskid"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="upload.js"></script>
+    
+    <script>
+        if (taskid) {
+            restore(taskid);
+            SetTaskId(taskid);
+        }
+    </script>
+    <script>
+        document.getElementById('copyButton1').addEventListener('click', 
+                () => {copyText('memo1Text')} );         
+        document.getElementById('copyButton2').addEventListener('click', 
+                () => {copyText('memo2Text')} );
+        document.getElementById('regenerate').addEventListener('click', 
+                () => {regenerate(GetTaskId())} );
+                
+       
+        function copyText(pElementId) {
+            const element = document.getElementById(pElementId);
+            const range = document.createRange();
+            range.selectNode(element);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            try {
+                document.execCommand('copy');
+            } catch(err) {
+                alert('Failed to copy text');
+            }
+            window.getSelection().removeAllRanges();
+        };
+    </script>
+
 </body>
 </html>
