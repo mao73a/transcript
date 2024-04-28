@@ -10,6 +10,9 @@ const favicon = require('serve-favicon');
 const { TextLoader } = require("langchain/document_loaders/fs/text");
 const { HumanMessage, SystemMessage } = require("langchain-core/messages");
 const { ChatOpenAI } = require("@langchain/openai");
+const crypto = require('crypto');
+
+
 const markdown = require( "markdown" ).markdown;
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -78,6 +81,73 @@ function removeAudioFiles() {
    });
 }
 
+
+ 
+
+function calculateMD5(filename) {
+ return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('md5');
+    const stream = fs.createReadStream(filename);
+
+    stream.on('data', (chunk) => {
+      hash.update(chunk);
+    });
+
+    stream.on('end', () => {
+      const md5 = hash.digest('hex');
+      resolve(md5);
+    });
+
+    stream.on('error', (error) => {
+      reject(error);
+    });
+ });
+}
+
+function readJsonFile(filePath) {
+   return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) {
+          // If the file does not exist or any other error occurs, resolve with an empty array
+          resolve([]);
+        } else {
+          try {
+              // Attempt to parse the JSON data
+              const parsedData = JSON.parse(data);
+              resolve(parsedData);
+          } catch (error) {
+              // If parsing fails (e.g., due to invalid JSON), resolve with an empty array
+              resolve([]);
+          }
+        }
+      });
+   });
+}
+
+async function lookupTaskIdByMd5(md5, filePath) {
+   const records = await readJsonFile(filePath);
+   try{
+      const record = await records.find(record => record.md5 === md5);
+      return record.taskid;
+   } catch(error){
+      return null;
+   }
+}  
+
+async function doIKnowThisMD5(md5){
+   const database = path.join(__dirname, 'uploads', 'md5db.json');
+   taskid = await lookupTaskIdByMd5(md5, database)
+   return taskid;
+}
+
+async function storeMD5(md5, taskid){
+   const database = path.join(__dirname, 'uploads', 'md5db.json');
+   const records = await readJsonFile(database);
+   records.push({md5: md5, taskid: taskid});
+   fs.writeFileSync(database, JSON.stringify(records, null, 2));
+}
+
+
 async function transcribeAudio(filePath) {
    try {
       // Transcribe the file using OpenAI Whisper-1
@@ -142,23 +212,30 @@ async function summarize(filePath, res){
 // Route for uploading files
 app.post(appRoute+'/upload', upload.single('file'), async (req, res) => {
    try {
-      console.log('upload1');
       // Assuming the uploaded file is saved in 'uploads/' directory
       const filePath = path.join(__dirname, 'uploads', req.file.filename);
       const taskid =  req.file.filename.match(/^\d+/)[0]; 
-      const outputFile = removeExtension(filePath) + '.ogg';
-      const command = 'ffmpeg -i "'+filePath+'" -vn -map_metadata -1 -ac 1 -c:a libopus -b:a 24k -application voip '+outputFile;
+      const md5 = await calculateMD5(filePath);
+      const cachedTaskId = await doIKnowThisMD5(md5);
+      if (cachedTaskId){
+         removeAudioFiles();
+         res.json({ status:"FOUND_IN_CACHE" , message: 'Uploading complete', filename : '', taskid : cachedTaskId});         
+      } else {
+         await storeMD5(md5, taskid);
+         const outputFile = removeExtension(filePath) + '.ogg';
+         const command = 'ffmpeg -i "'+filePath+'" -vn -map_metadata -1 -ac 1 -c:a libopus -b:a 24k -application voip '+outputFile;
 
-      // Execute the command
-      exec(command, async (error, stdout, stderr) => {
-         if (error) {
-            await res.status(500).json({ status :'ERROR', message: 'Compress error '+error});  
-         }
-         else { 
-            console.log('upload OK');
-            await res.json({ status:"OK" , message: 'Uploading complete', filename : outputFile, taskid : taskid});         
-         }
-       });
+         // Execute the command
+         exec(command, async (error, stdout, stderr) => {
+            if (error) {
+               await res.status(500).json({ status :'ERROR', message: 'Compress error '+error});  
+            }
+            else { 
+               console.log('upload OK');
+               await res.json({ status:"OK" , message: 'Uploading complete', filename : outputFile, taskid : taskid});         
+            }
+         });
+      }
    } catch (error) {
       console.error('Error uploading the file:', error);
       res.status(500).json({ message: 'Error uploading file' });
@@ -169,26 +246,27 @@ app.post(appRoute+'/upload', upload.single('file'), async (req, res) => {
 
 
 app.post(appRoute+'/transcribe', upload.none(),   async (req, res) => {
+   const filePath = req.body.filename;
+   if (!filePath) {
+        return res.status(400).json({ message: 'transcribe: File path is required.' });
+    }
    try {
-       const filePath = req.body.filename;
-      if (!filePath) {
-           return res.status(400).json({ message: 'transcribe: File path is required.' });
-       }
       const transcriptionResult = await transcribeAudio(filePath);
       res.json({
-           status : "OK",
-           filename : transcriptionResult.filename,
-           message: 'Transcription complete.',
-           text: transcriptionResult.fulltext,
-       });
+         status : "OK",
+         filename : transcriptionResult.filename,
+         message: 'Transcription complete.',
+         text: transcriptionResult.fulltext,
+      });
    } catch (error) {
-       console.error('Error transcribing file:', error);
-       //res.status(500).json({ message: 'Error transcribing file', text:'' });
-       res.json({
+      console.error('Error transcribing file:', error);
+      //res.status(500).json({ message: 'Error transcribing file', text:'' });
+      res.json({
          status : 'ERROR',
          message: 'Transcription error.'
-     });       
+      });       
    }
+
 });
 
 app.post(appRoute+'/summary', upload.none(),   async (req, res) => {

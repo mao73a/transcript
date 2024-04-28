@@ -39,8 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return  response.json();
           })
           .then((data) => {
+            taskid = data.taskid;             
+            if(data.status == 'FOUND_IN_CACHE'){
+              restore(taskid);
+              SetTaskId(taskid);
+              throw new Error('Data found in cache.');
+            }
             dropZone.textContent = data.message;
-            taskid = data.taskid;  
+ 
             const formData = new FormData();
             formData.append('filename', data.filename);
             dropZone.textContent = 'Przetwarzam mowę na tekst...';
@@ -69,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return  response.json();
           })   
           .then((data) => {
+
             dropZone.textContent = data.message;  
             SetTaskId(taskid);
             dropZone.innerHTML = 'Gotowe. <a href="' + appRoute + '/index.html?taskid=' + taskid + '">Link do tego podsumowania.</a>';
@@ -106,7 +113,8 @@ function restore(taskid){
     return  response.json();
   })   
   .then((data) => {
-    dropZone.textContent = data.message;  
+    dropZone.innerHTML = data.message+'. <a href="' + appRoute + '/index.html?taskid=' + taskid + '">Link do tego podsumowania.</a>';
+ 
     memo1.style.display = 'block';
     memo2.style.display = 'block';              
     memo1Text.innerHTML = data.fulltext;            
