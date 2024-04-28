@@ -272,35 +272,6 @@ app.get(appRoute+'/rebuild', (req, res) => {
    });
   });
 
-// Add this route to your app.js file
-app.get(appRoute+'/restart1', async (req, res) => {
-   try {
-       // Specify the directory and file name
-       const directoryPath = path.join(__dirname, 'uploads');
-       const filePath = path.join(directoryPath, 'restart.txt');
-
-       // Check if the directory exists, if not, create it
-       if (!fs.existsSync(directoryPath)) {
-           fs.mkdirSync(directoryPath, { recursive: true });
-       }
-
-       // Write to the file
-       fs.writeFileSync(filePath, 'This is a command file.');
-
-       // Send a response back to the client
-       res.json({
-           status: 'OK',
-           message: 'File command.txt created successfully.'
-       });
-   } catch (error) {
-       console.error('Error creating command.txt:', error);
-       res.status(500).json({
-           status: 'ERROR',
-           message: 'Failed to create command.txt.'
-       });
-   }
-});
-
 
 // Serve static files from the 'public' directory
 app.use(appRoute+'/', express.static('public'));
