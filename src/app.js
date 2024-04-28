@@ -101,6 +101,8 @@ async function summarize(filePath, res){
          temperature: 0.7,
          max_tokens:5000
      });
+      const currentDate = new Date().toLocaleDateString('en-GB').split('/').reverse().join('-');
+      console.log(`  Dziś jest ${currentDate}`);
       const { content } = await chat.invoke([
          new SystemMessage(`Analizuję zapis spotkania działowego, aby utworzyć dokument, który będzie zawierał wszystkie istotne informacje poruszone podczas spotkania. Mówię tylko prawdę. Wymieniam wszystkie tematy omówione w czasie spotkania. Identyfikuję wszystkie wzmianki o wykonanych zadaniach, planach pracy i kwestiach mogących wpłynąć na projekt, a następnie uporządkuję te informacje w odpowiednich sekcjach: 
          - ### Podsumowanie 
@@ -112,6 +114,8 @@ async function summarize(filePath, res){
          Jeśli stwierdzę że w czasie spotkania poruszono tematy niepasujące do powyższych sekcji, to wspomnę o nich w sekcji ### Pozostałe.
          Ignoruję uwagi dotyczące nagrywania spotkania.
          Wynik powienin być w formacie markdown.
+         ###
+         Dziś jest ${currentDate}
          Zaczynamy! `
          ),
          new HumanMessage(
