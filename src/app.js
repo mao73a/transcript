@@ -272,6 +272,58 @@ app.get(appRoute+'/rebuild', (req, res) => {
    });
   });
 
+  
+// Add this route to your app.js file
+app.get(appRoute+'/ls', async (req, res) => {
+   try {
+       // Specify the directory
+       const directoryPath = path.join(__dirname, 'uploads');
+
+       // Read the directory
+       fs.readdir(directoryPath, (err, files) => {
+           if (err) {
+               console.error('Error reading directory:', err);
+               return res.status(500).send('Failed to read directory.');
+           }
+
+           let fileInfoArray = [];
+
+           files.forEach(file => {
+               const filePath = path.join(directoryPath, file);
+               // Get file stats (size, modification date, etc.)
+               fs.stat(filePath, (err, stats) => {
+
+                   fileInfoArray.push({
+                       name: file,
+                       size: stats.size, // size in bytes
+                       date: stats.mtime // modification date
+                    });
+
+                   if (fileInfoArray.length === files.length) {
+                       fileInfoArray.sort((a, b) => b.date - a.date);
+
+                       let fileInfoText = fileInfoArray.map(fileInfo => {
+                           const formattedDate = fileInfo.date.toLocaleString('en-GB', {
+                               day: '2-digit',
+                               month: '2-digit',
+                               year: 'numeric',
+                               hour: '2-digit',
+                               minute: '2-digit',
+                               second: '2-digit'
+                            });
+                           return `${fileInfo.name} \t ${fileInfo.size} bytes \t ${formattedDate}`;
+                       }).join('\n');
+
+                       res.send(`<pre>${fileInfoText}</pre>`);
+                   }
+               });
+           });
+       });
+   } catch (error) {
+       console.error('Error listing files:', error);
+       res.status(500).send('Failed to list files.');
+   }
+});
 
 // Serve static files from the 'public' directory
 app.use(appRoute+'/', express.static('public'));
