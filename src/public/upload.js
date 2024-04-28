@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
       var taskid = 0;
       if (file.type !== 'audio/mp4' && file.type !== 'audio/mpeg' &&
           file.type !== 'audio/x-m4a' && file.type !== 'video/mp4'){
-          alert('Please drop an M4A, MP4, MP3 file only. ('+file.type+')');
+          alert('Tylko pliki: M4A, MP4, MP3. Twój plik to '+file.type);
           return;
       }
 
@@ -60,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
           })
           .then((data) => {
             const formData = new FormData();
-            formData.append('filename', data.filename);            
+            formData.append('filename', data.filename);        
+            formData.append('summaryVersion',1);    
             dropZone.textContent = 'Generowanie podsumowania...';
             memo1.style.display = 'block';
             memo2.style.display = 'block';              
@@ -135,12 +136,13 @@ function GetTaskId(taskid){
   return document.getElementById("_taskid").textContent;
 }
 
-function regenerate(ptaskid){
+function regenerate(ptaskid, summaryVersion){
   const dropZone = document.getElementById('drop-zone');  
   const memo2 = document.getElementById('memo2');
   dropZone.textContent = "Ponowne generowanie podsumowania..."
   const formData = new FormData();
   formData.append('taskid', ptaskid); 
+  formData.append('summaryVersion',summaryVersion);
 
   fetch(appRoute+'/summary', {
       method: 'POST',

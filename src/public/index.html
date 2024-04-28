@@ -29,7 +29,7 @@
         </div>
         <div class="text-center mt-5">
             <div id="drop-zone" class="border p-5" style="border-style: dashed; border-radius: 10px;">
-                Drop M4A or MP3 file here
+                Upuść tutaj plik M4A, MP4, MP3 
             </div>
         </div>
         <div class="text-left mt-3">
@@ -43,7 +43,9 @@
                 <div class="col-md-6">
                     <div id="memo2" class="alert alert-info" style="display: none; position: relative;">
                         <div class="memo2-buttons" style="position: absolute; top: 0; right: 0; display: flex;">
-                            <button id="regenerate" title="Generuj odpowiedź ponownie" style="border: none; background: none;">⟲</button>                            
+                            <button id="regenerate1" title="Generuj odpowiedź ponownie (ver 1)" style="border: none; background: none;">⟲-1</button>
+                            <button id="regenerate2" title="Generuj odpowiedź ponownie (ver 2)" style="border: none; background: none;">⟲-2</button> 
+                            <button id="regenerate3" title="Generuj odpowiedź ponownie (ver 3)" style="border: none; background: none;">⟲-3</button>                              
                             <button id="copyButton2" title="Kopiuj tekst" style="border: none; background: none;">📋</button>
                         </div>
                         <span id="memo2Text"></span>
@@ -54,7 +56,7 @@
             </div>         
         </div>
         <div class="text-right mt-3">
-            v 0.14
+            v 0.15
         </div>
     </div>
 
@@ -72,9 +74,12 @@
                 () => {copyText('memo1Text')} );         
         document.getElementById('copyButton2').addEventListener('click', 
                 () => {copyText('memo2Text')} );
-        document.getElementById('regenerate').addEventListener('click', 
-                () => {regenerate(GetTaskId())} );
-                
+        document.getElementById('regenerate1').addEventListener('click', 
+                () => {regenerate(GetTaskId(), 1)} );
+        document.getElementById('regenerate2').addEventListener('click', 
+                () => {regenerate(GetTaskId(), 2)} );  
+        document.getElementById('regenerate3').addEventListener('click', 
+                () => {regenerate(GetTaskId(), 3)} );                                 
        
         function copyText(pElementId) {
             const element = document.getElementById(pElementId);
