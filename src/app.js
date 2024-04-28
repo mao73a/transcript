@@ -17,6 +17,12 @@ app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 const appRoute = `/${config.applicationName}`;
 const port = 3000;
 
+// Start the server
+const server = app.listen(port, () => {
+   console.log(`Server is running on port ${port}`);
+  });
+  
+
 
 // Initialize the OpenAI object
 const openai = new OpenAI();
@@ -248,6 +254,54 @@ app.post(appRoute+'/restore',upload.none(),  async (req, res) => {
 });
 
 
+app.get(appRoute+'/rebuild', (req, res) => {
+   // Ensure this endpoint is secured and only accessible by authorized users
+   exec('cd .. && git pull && cd src && npm install', (error, stdout, stderr) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return res.status(500).send(`Error: ${error}`);
+      }
+      console.log(`stdout: ${stdout}`);
+      console.error(`stderr: ${stderr}`);
+      res.send(`Update completed: ${stdout}`);
+      server.close(() => {
+         console.log('Process terminated');
+         process.exit(0);
+      });
+ 
+   });
+  });
+
+// Add this route to your app.js file
+app.get(appRoute+'/restart1', async (req, res) => {
+   try {
+       // Specify the directory and file name
+       const directoryPath = path.join(__dirname, 'uploads');
+       const filePath = path.join(directoryPath, 'restart.txt');
+
+       // Check if the directory exists, if not, create it
+       if (!fs.existsSync(directoryPath)) {
+           fs.mkdirSync(directoryPath, { recursive: true });
+       }
+
+       // Write to the file
+       fs.writeFileSync(filePath, 'This is a command file.');
+
+       // Send a response back to the client
+       res.json({
+           status: 'OK',
+           message: 'File command.txt created successfully.'
+       });
+   } catch (error) {
+       console.error('Error creating command.txt:', error);
+       res.status(500).json({
+           status: 'ERROR',
+           message: 'Failed to create command.txt.'
+       });
+   }
+});
+
+
 // Serve static files from the 'public' directory
 app.use(appRoute+'/', express.static('public'));
 
@@ -256,7 +310,3 @@ app.get(appRoute+'/', (req, res) => {
    res.sendFile('public', 'index.html');
 });
 
-// Start the server
-app.listen(port, () => {
- console.log(`Server is running on port ${port}`);
-});
