@@ -263,7 +263,7 @@ app.get(appRoute+'/rebuild', (req, res) => {
       }
       console.log(`stdout: ${stdout}`);
       console.error(`stderr: ${stderr}`);
-      res.send(`Update completed: ${stdout}`);
+      res.send(`<pre>${stdout}</pre>`);
       server.close(() => {
          console.log('Process terminated');
          process.exit(0);
