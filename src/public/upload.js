@@ -143,7 +143,7 @@ function regenerate(ptaskid){
   })   
   .then((data) => {
     dropZone.textContent = data.message;  
-    dropZone.innerHTML = 'Gotowe. <a href="' + appRoute + '/index.html?taskid=' + taskid + '">Link do tego podsumowania.</a>';
+    dropZone.innerHTML = 'Gotowe. <a href="' + appRoute + '/index.html?taskid=' + ptaskid + '">Link do tego podsumowania.</a>';
     memo2Text.innerHTML = data.text;            
   })                          
   .catch(function(error) {
