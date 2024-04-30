@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if(data.status == 'FOUND_IN_CACHE'){
               restore(taskid);
               SetTaskId(taskid);
-              throw new Error('Data found in cache.');
+              throw new Error('FOUND_IN_CACHE');
             }
             dropZone.textContent = data.message;
  
@@ -88,8 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
           })                          
           .catch(function(error) {
             console.log('Error 2');
-            dropZone.textContent = error;
-            console.log(error);
+            if (error.message.includes("FOUND_IN_CACHE")) {
+              console.log("Tekst znaleziony w cache");
+            } else {
+                dropZone.textContent = error;
+                console.log(error);
+            }
           });
 
       }
