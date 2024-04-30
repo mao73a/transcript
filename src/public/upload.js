@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   dropZone.addEventListener('drop', async (e) => {
+      const memo1Text = document.getElementById('memo1Text');
+      const memo2Text = document.getElementById('memo2Text');      
       e.preventDefault();
       dropZone.classList.remove('dragover');
       const file = e.dataTransfer.files[0];
@@ -101,6 +103,8 @@ function restore(taskid){
   const dropZone = document.getElementById('drop-zone');
   const memo1 = document.getElementById('memo1');
   const memo2 = document.getElementById('memo2');
+  const memo1Text = document.getElementById('memo1Text');
+  const memo2Text = document.getElementById('memo2Text');    
   const formData = new FormData();
 
   dropZone.textContent = "Ładuje dane historyczne..."
@@ -138,7 +142,7 @@ function GetTaskId(taskid){
 
 function regenerate(ptaskid, summaryVersion){
   const dropZone = document.getElementById('drop-zone');  
-  const memo2 = document.getElementById('memo2');
+  const memo2Text = document.getElementById('memo2Text');
   dropZone.textContent = "Ponowne generowanie podsumowania..."
   const formData = new FormData();
   formData.append('taskid', ptaskid); 
